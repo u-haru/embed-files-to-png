@@ -1,12 +1,13 @@
-const SIG_CEN: Uint8Array = new TextEncoder().encode('PK\x01\x02');
+// const SIG_CEN: Uint8Array = new TextEncoder().encode('PK\x01\x02');
 const SIG_EOCD: Uint8Array = new TextEncoder().encode('PK\x05\x06');
 
 const fixupZip = (
     zipData: Uint8Array,
     insertOffset: number
 ): Uint8Array => {
-    const posCen: number = findSignature(zipData, SIG_CEN);
+    // const posCen: number = findSignature(zipData, SIG_CEN);
     const posEocd: number = findSignature(zipData, SIG_EOCD);
+    const posCen: number = readUint32(zipData, posEocd + 16);
     if (posCen === -1 || posEocd === -1 || posEocd <= posCen) {
         throw new Error("Invalid ZIP file.");
     }
@@ -40,7 +41,7 @@ const findSignature = (
     data: Uint8Array,
     signature: Uint8Array
 ): number => {
-    for (let i = 0; i <= data.length - signature.length; i++) {
+    for (let i = data.length - signature.length; i >= 0; i--) {
         let found: boolean = true;
         for (let j = 0; j < signature.length; j++) {
             if (data[i + j] !== signature[j]) {

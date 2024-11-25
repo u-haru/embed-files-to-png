@@ -20,10 +20,6 @@ const embedZipIntoPng = async (
 	try {
 		const pngBuffer: ArrayBuffer = inputPng instanceof Uint8Array ? inputPng.buffer : await inputPng.arrayBuffer();
 		// const zipBuffer = await createZip(inputFiles);
-		// もし複数ファイル、かつzipが1つでもある場合はエラー
-		if (inputFiles.length > 1 && inputFiles.some(file => file.name.endsWith('.zip'))) {
-			throw new Error('Multiple files are selected, but one of them is a ZIP file.');
-		}
 		// ファイルが1つ、かつzipファイルの場合はそのまま使う
 		const zipBuffer = inputFiles.length === 1 && inputFiles[0].name.endsWith('.zip')
 			? new Uint8Array(await inputFiles[0].arrayBuffer())
