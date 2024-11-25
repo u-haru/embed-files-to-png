@@ -12,15 +12,24 @@ const PngSelecter: React.FC<{
 		if (ctx) {
 			const image = new Image();
 			image.onload = () => {
-				ctx.canvas.width = image.width;
-				ctx.canvas.height = image.height;
-				ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-				ctx.drawImage(image, 0, 0, image.width, image.height);
+				let width = image.width;
+				let height = image.height;
+
+				if (width * height > 1024 * 1024) {
+					const ratio = Math.sqrt((1024 * 1024) / (width * height));
+					width = Math.floor(width * ratio);
+					height = Math.floor(height * ratio);
+				}
+
+				ctx.canvas.width = width;
+				ctx.canvas.height = height;
+				ctx.clearRect(0, 0, width, height);
+				ctx.drawImage(image, 0, 0, width, height);
 
 				// 画像の右下1pxを透過させる
-				const pix = ctx.getImageData(image.width - 1, image.height - 1, 1, 1);
+				const pix = ctx.getImageData(width - 1, height - 1, 1, 1);
 				pix.data[3] = 0;
-				ctx.putImageData(pix, image.width - 1, image.height - 1);
+				ctx.putImageData(pix, width - 1, height - 1);
 
 				const imageData = ctx.canvas.toDataURL('image/png');
 				fetch(imageData)
