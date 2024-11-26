@@ -11,7 +11,6 @@ const PngSelecter: React.FC<{
 
 	useEffect(() => {
 		const ctx = canvasRef.current?.getContext('2d');
-		console.log("changed")
 		if (ctx && rawFile) {
 			const image = new Image();
 			image.onload = () => {
