@@ -51,7 +51,7 @@ const FileSelecter: React.FC<{
 				}}
 			>
 				{files.length > 0 ? (
-					<List sx={{ width: '100%' }}>
+					<List sx={{ width: '100%', textAlign : 'center' }}>
 						{files.map((file, index) => (
 							<ListItem
 								key={index}
@@ -72,6 +72,15 @@ const FileSelecter: React.FC<{
 								<Typography variant="body1">{file.name}</Typography>
 							</ListItem>
 						))}
+						{files.length > 1 && (
+							<Button
+								variant="text"
+								color="error"
+								onClick={() => setFiles([])}
+							>
+								Remove All
+							</Button>
+						)}
 					</List>
 				) : (
 					<Box sx={{ textAlign: 'center' }}>
