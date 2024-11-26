@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Button, Container, FormControlLabel, FormLabel, Switch, TextField, Typography } from '@mui/material';
+import { Box, Button, Container, FormControlLabel, Link, Switch, TextField, Typography } from '@mui/material';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import embedZipIntoPng from './utils/embedZipIntoPng';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
@@ -23,14 +23,14 @@ const App: React.FC = () => {
 	};
 
 	return (
-		<Container maxWidth="lg" sx={{ my: 5, display: 'flex', flexDirection: 'column', gap: 3, width: '100%', mx: 'auto' }}>
+		<Container component="form" sx={{ m: 5, display: 'flex', flexDirection: 'column', gap: 3, mx: 'auto' }} maxWidth="md">
 			<Typography variant="h3" align="center" gutterBottom>
 				Embed ZIP into PNG
 			</Typography>
-			<Typography variant="body2" align="center" color="text.secondary">
-				Embed ZIP file into PNG file. The PNG file is created by converting the input image to PNG format.
+			<Typography>
+				Embed ZIP file into image file. Image file will be automatically converted to PNG format.<br />
+				Source code: <Link href="https://github.com/u-haru/embed-files-to-png" target="_blank" rel="noopener noreferrer">github.com/u-haru/embed-files-to-png</Link>
 			</Typography>
-			<Box component="form" sx={{ display: 'flex', flexDirection: 'column', gap: 3, mx: 'auto' }}>
 				<Box sx={{ display: 'flex', gap: 3, alignItems: 'flex-end', flexWrap: 'wrap', justifyContent: 'center' }}>
 					<PngSelecter blob={inputPng} setBlob={setInputPng} resize={resize} />
 					<FileSelecter files={inputFiles} setFiles={setInputFiles} />
@@ -58,7 +58,6 @@ const App: React.FC = () => {
 					sx={{ mt: 2 }}
 				>Embed ZIP into PNG</Button>
 				<ThemeSwitch />
-			</Box>
 		</Container>
 	);
 };
