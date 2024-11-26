@@ -1,21 +1,24 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Box, Button } from '@mui/material';
 import InsertPhotoIcon from '@mui/icons-material/InsertPhoto';
 const PngSelecter: React.FC<{
 	blob: Blob | null;
 	setBlob: (blob: Blob) => void;
-}> = ({ blob, setBlob }) => {
+	resize: boolean;
+}> = ({ blob, setBlob, resize }) => {
 	const canvasRef = React.useRef<HTMLCanvasElement>(null);
+	const [rawFile, setRawFile] = React.useState<File | null>(null);
 
-	const handlePngChange = (file: File) => {
+	useEffect(() => {
 		const ctx = canvasRef.current?.getContext('2d');
-		if (ctx) {
+		console.log("changed")
+		if (ctx && rawFile) {
 			const image = new Image();
 			image.onload = () => {
 				let width = image.width;
 				let height = image.height;
 
-				if (width * height > 1024 * 1024) {
+				if (resize && width * height > 1024 * 1024) {
 					const ratio = Math.sqrt((1024 * 1024) / (width * height));
 					width = Math.floor(width * ratio);
 					height = Math.floor(height * ratio);
@@ -38,8 +41,12 @@ const PngSelecter: React.FC<{
 						setBlob(blob);
 					});
 			};
-			image.src = URL.createObjectURL(file);
+			image.src = URL.createObjectURL(rawFile);
 		}
+	}, [resize, rawFile]);
+
+	const handlePngChange = (file: File) => {
+		setRawFile(file);
 	};
 
 	const handleFileInput = (event: React.ChangeEvent<HTMLInputElement>) => {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Button, Container, TextField, Typography } from '@mui/material';
+import { Box, Button, Container, FormControlLabel, FormLabel, Switch, TextField, Typography } from '@mui/material';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import embedZipIntoPng from './utils/embedZipIntoPng';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
@@ -12,6 +12,7 @@ const App: React.FC = () => {
 	const [inputPng, setInputPng] = useState<Blob | null>(null);
 	const [inputFiles, setInputFiles] = useState<File[]>([]);
 	const [outputFile, setOutputFile] = useState<string>('output.zip.png');
+	const [resize, setResize] = useState<boolean>(false);
 
 	const handleOutputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		setOutputFile(event.target.value);
@@ -31,7 +32,7 @@ const App: React.FC = () => {
 			</Typography>
 			<Box component="form" sx={{ display: 'flex', flexDirection: 'column', gap: 3, mx: 'auto' }}>
 				<Box sx={{ display: 'flex', gap: 3, alignItems: 'flex-end', flexWrap: 'wrap', justifyContent: 'center' }}>
-					<PngSelecter blob={inputPng} setBlob={setInputPng} />
+					<PngSelecter blob={inputPng} setBlob={setInputPng} resize={resize} />
 					<FileSelecter files={inputFiles} setFiles={setInputFiles} />
 				</Box>
 				<TextField
@@ -41,6 +42,14 @@ const App: React.FC = () => {
 					onChange={handleOutputChange}
 					fullWidth
 				/>
+				<FormControlLabel
+					control={
+						<Switch
+							color="primary"
+							checked={resize}
+							onChange={() => setResize(!resize)}
+						/>}
+					label="Resize when bigger than 1024x1024 pixels" />
 				<Button
 					variant="contained"
 					color="success"
