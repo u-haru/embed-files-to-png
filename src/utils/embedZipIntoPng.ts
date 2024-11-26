@@ -68,17 +68,20 @@ const embedZipIntoPng = async (
 	}
 };
 
+const crc32table = new Uint32Array(256).map((_, n) => {
+	let c = n;
+	for (let k = 0; k < 8; k++) {
+		c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+	}
+	return c >>> 0;
+});
 const crc32 = (type: Uint8Array, data: Uint8Array): number => {
-	const table = new Uint32Array(256).map((_, n) => {
-		let c = n;
-		for (let k = 0; k < 8; k++) {
-			c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
-		}
-		return c >>> 0;
-	});
+	const combinedData = new Uint8Array(type.length + data.length);
+	combinedData.set(type);
+	combinedData.set(data, type.length);
 	let crc = ~0;
-	[...type, ...data].forEach(byte => {
-		crc = (crc >>> 8) ^ table[(crc ^ byte) & 0xff];
+	combinedData.forEach(byte => {
+		crc = (crc >>> 8) ^ crc32table[(crc ^ byte) & 0xff];
 	});
 	return ~crc >>> 0;
 };
