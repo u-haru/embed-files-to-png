@@ -17,8 +17,8 @@ const PngSelecter: React.FC<{
 				let width = image.width;
 				let height = image.height;
 
-				if (resize && width * height > 1024 * 1024) {
-					const ratio = Math.sqrt((1024 * 1024) / (width * height));
+				if (resize && Math.max(width, height) > 864) {
+					const ratio = 864 / Math.max(width, height);
 					width = Math.floor(width * ratio);
 					height = Math.floor(height * ratio);
 				}
@@ -26,6 +26,7 @@ const PngSelecter: React.FC<{
 				ctx.canvas.width = width;
 				ctx.canvas.height = height;
 				ctx.clearRect(0, 0, width, height);
+				ctx.imageSmoothingEnabled = false;
 				ctx.drawImage(image, 0, 0, width, height);
 
 				// 画像の右下1pxを透過させる

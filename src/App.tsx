@@ -12,7 +12,7 @@ const App: React.FC = () => {
 	const [inputPng, setInputPng] = useState<Blob | null>(null);
 	const [inputFiles, setInputFiles] = useState<File[]>([]);
 	const [outputFile, setOutputFile] = useState<string>('output.zip.png');
-	const [resize, setResize] = useState<boolean>(false);
+	const [resize, setResize] = useState<boolean>(true);
 
 	const handleOutputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		setOutputFile(event.target.value);
@@ -49,7 +49,7 @@ const App: React.FC = () => {
 							checked={resize}
 							onChange={() => setResize(!resize)}
 						/>}
-					label="Resize when bigger than 1024x1024 pixels" />
+					label="Resize when max edge is bigger than 864px" />
 				<Button
 					variant="contained"
 					color="success"
