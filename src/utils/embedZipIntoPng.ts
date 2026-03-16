@@ -18,7 +18,9 @@ const embedZipIntoPng = async (
 	}
 
 	try {
-		const pngBuffer: ArrayBuffer = inputPng instanceof Uint8Array ? inputPng.buffer : await inputPng.arrayBuffer();
+		const pngBuffer: ArrayBuffer = inputPng instanceof Uint8Array
+			? inputPng.buffer.slice(inputPng.byteOffset, inputPng.byteOffset + inputPng.byteLength)
+			: await inputPng.arrayBuffer();
 		// const zipBuffer = await createZip(inputFiles);
 		// ファイルが1つ、かつzipファイルの場合はそのまま使う
 		const zipBuffer = inputFiles.length === 1 && inputFiles[0].name.endsWith('.zip')
@@ -27,7 +29,6 @@ const embedZipIntoPng = async (
 
 
 		const pngData = new Uint8Array(pngBuffer);
-		const zipData = new Uint8Array(zipBuffer);
 
 		const PNG_SIG = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 		if (!pngData.slice(0, 8).every((byte, i) => byte === PNG_SIG[i])) {
@@ -35,25 +36,35 @@ const embedZipIntoPng = async (
 		}
 
 		const IEND = new Uint8Array([0x49, 0x45, 0x4e, 0x44]);
+		const IDAT = new TextEncoder().encode('IDAT');
 		const chunks: Uint8Array[] = [];
 		let offset = 8;
 
 		while (offset < pngData.length) {
-			const length = (pngData[offset] << 24) | (pngData[offset + 1] << 16) | (pngData[offset + 2] << 8) | pngData[offset + 3];
+			if (offset + 8 > pngData.length) {
+				throw new Error('Invalid PNG chunk header.');
+			}
+
+			const length = ((pngData[offset] << 24) | (pngData[offset + 1] << 16) | (pngData[offset + 2] << 8) | pngData[offset + 3]) >>> 0;
+			const chunkEnd = offset + 12 + length;
+			if (chunkEnd > pngData.length) {
+				throw new Error('Invalid PNG chunk length.');
+			}
 			const type = pngData.slice(offset + 4, offset + 8);
 
 			if (type.every((byte, i) => byte === IEND[i])) {
 				const insertOffset = offset + 8;
-				const zipChunkType = new TextEncoder().encode('IDAT');
 				const zipChunkData = fixupZip(zipBuffer, insertOffset);
-				const zipChunkLength = new Uint8Array(new Uint32Array([zipChunkData.length]).buffer);
-				const zipChunkCrc = new Uint8Array(new Uint32Array([crc32(zipChunkType, zipData)]).buffer);
+				const zipChunkLength = uint32ToBigEndianBytes(zipChunkData.length);
+				const zipChunkCrc = uint32ToBigEndianBytes(crc32(IDAT, zipChunkData));
 
-				chunks.push(zipChunkLength, zipChunkType, zipChunkData, zipChunkCrc);
+				chunks.push(zipChunkLength, IDAT, zipChunkData, zipChunkCrc);
+				chunks.push(pngData.slice(offset, chunkEnd));
+				break;
 			}
-			chunks.push(pngData.slice(offset, offset + 12 + length));
+			chunks.push(pngData.slice(offset, chunkEnd));
 
-			offset += 12 + length;
+			offset = chunkEnd;
 		}
 
 		const newPngData = new Blob([PNG_SIG, ...chunks], { type: 'image/png' });
@@ -84,6 +95,15 @@ const crc32 = (type: Uint8Array, data: Uint8Array): number => {
 		crc = (crc >>> 8) ^ crc32table[(crc ^ byte) & 0xff];
 	});
 	return ~crc >>> 0;
+};
+
+const uint32ToBigEndianBytes = (value: number): Uint8Array => {
+	const out = new Uint8Array(4);
+	out[0] = (value >>> 24) & 0xff;
+	out[1] = (value >>> 16) & 0xff;
+	out[2] = (value >>> 8) & 0xff;
+	out[3] = value & 0xff;
+	return out;
 };
 
 export default embedZipIntoPng;
